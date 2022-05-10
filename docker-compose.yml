@@ -13,7 +13,6 @@ services:
       - PUPPETDB_SERVER_URLS=https://puppetdb:8081
       # Testing specific variables needed to bootstrap cert preloading
       - CERT_VOLUME=puppetserver-config
-      # NOTE: puppet oss layout is different than PE puppet
       - CERT_SRCDIR=puppet-oss
       - CERT_DESTDIR=ssl
     volumes:
@@ -77,20 +76,18 @@ services:
   puppetboard:
     image: ${PUPPETB_IMAGE:-puppetboard:latest}
     hostname: puppetboard
-    depends_on:
-      - puppetdb
-      - puppetserver
     ports:
       - 80:80
     environment:
       - PUPPETDB_PORT=8081
       - PUPPETDB_HOST=puppetdb
       - PUPPETDB_SSL_VERIFY=/etc/puppetlabs/puppet/ssl/certs/ca.pem
-      - PUPPETDB_KEY=/etc/puppetlabs/puppet/ssl/private_keys/ip-172-31-36-67.eu-west-3.compute.internal.pem
-      - PUPPETDB_CERT=/etc/puppetlabs/puppet/ssl/certs/ip-172-31-36-67.eu-west-3.compute.internal.pem
+      - PUPPETDB_KEY=/etc/puppetlabs/puppet/ssl/private_keys/${HOSTNAME}.pem
+      - PUPPETDB_CERT=/etc/puppetlabs/puppet/ssl/certs/${HOSTNAME}.pem
       - INVENTORY_FACTS='Hostname,fqdn, IP Address,ipaddress'
       - ENABLE_CATALOG=True
       - GRAPH_FACTS='architecture,puppetversion,osfamily'
+    restart: always
     volumes:
       - /etc/puppetlabs/puppet/:/etc/puppetlabs/puppet/
 
@@ -103,9 +100,7 @@ volumes:
       com.puppet.certs.uid: 999
       com.puppet.certs.gid: 999
   puppetdb:
-  puppetserver-code:
   puppetserver-config:
   puppetserver-data:
-  puppetserver-ca:
   puppetdb-data:
   puppetdb-config:
